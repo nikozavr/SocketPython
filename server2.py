@@ -3,6 +3,7 @@ from time import sleep
 import threading
 import queue
 import asyncore
+import datetime
 
 def process(host, port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -25,7 +26,7 @@ thread.start()
 
 while True:
     try:
-        print(q.get(timeout=1))
+        print(datetime.datetime.now().strftime('%H:%M:%S.%f')[:-3] + "| "+ q.get(timeout=1))
     except KeyboardInterrupt:
         break
     except queue.Empty:
