@@ -25,9 +25,7 @@ def timer_call(f_stop, target):
         work()
 
 def work():
-    global count
     print("Timer work")
-    count = count + 1
 
 host = ''
 port = 6060
@@ -41,9 +39,7 @@ try:
     target = time.clock() + interval
     timer_call(f_stop, target)
     while not f_stop.is_set():
-        sleep(400)
-        f_stop.set()
-    print(count)
+        sleep(1)
 except KeyboardInterrupt:
     print("Interrupted.")
     f_stop.set()
