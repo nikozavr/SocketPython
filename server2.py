@@ -1,9 +1,11 @@
 import socket
 from time import sleep
-import threading
-import queue
-import asyncore
-import datetime
+from threading import Event, Thread, Timer
+from queue import Queue
+import time
+
+count = 0
+interval = 0.04
 
 def process(host, port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -17,17 +19,31 @@ def process(host, port):
         c.close
         q.put(data.decode())
 
+def timer_call(f_stop, target):
+    if not f_stop.is_set():
+        Timer(target - time.clock(), timer_call, [f_stop, target+interval]).start()
+        work()
+
+def work():
+    global count
+    print("Timer work")
+    count = count + 1
+
 host = ''
 port = 6060
-q = queue.Queue()
-thread = threading.Thread(target=process, args=(host, port))
-thread.daemon = True
-thread.start()
+q = Queue()
 
-while True:
-    try:
-        print(datetime.datetime.now().strftime('%H:%M:%S.%f')[:-3] + "| "+ q.get(timeout=1))
-    except KeyboardInterrupt:
-        break
-    except queue.Empty:
-        pass
+try:
+    thread = Thread(target=process, args=(host, port))
+    thread.daemon = True
+    thread.start()
+    f_stop = Event()
+    target = time.clock() + interval
+    timer_call(f_stop, target)
+    while not f_stop.is_set():
+        sleep(400)
+        f_stop.set()
+    print(count)
+except KeyboardInterrupt:
+    print("Interrupted.")
+    f_stop.set()
