@@ -3,6 +3,7 @@ from time import sleep
 from threading import Event, Thread, Timer
 from queue import Queue
 import time
+from datetime import datetime
 
 count = 0
 interval = 0.04
@@ -13,10 +14,10 @@ def process(host, port):
     s.listen(1)
     global q
     while True:
-        c, addr = s.accept()
+        c, _ = s.accept()
         size = c.recv(4)
         data = c.recv(int.from_bytes(size, byteorder='little'))
-        c.close
+        c.close()
         q.put(data.decode())
 
 def timer_call(f_stop, target):
@@ -25,7 +26,9 @@ def timer_call(f_stop, target):
         work()
 
 def work():
-    print("Timer work")
+    global q
+    if not q.empty():
+        print("{0}|{1}".format(datetime.now().strftime('%H:%M:%S.%f')[:-3], q.get()))
 
 host = ''
 port = 6060
